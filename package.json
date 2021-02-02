@@ -7,14 +7,19 @@
     "url": "https://github.com/marko-js-samples/marko-webpack/issues"
   },
   "dependencies": {
+    "@marblejs/core": "^3.4.8",
+    "axios": "^0.21.1",
     "compression": "^1.7.4",
     "express": "^4.17.1",
+    "fp-ts": "^2.9.3",
     "marked": "^0.7.0",
     "marko": "^4.18.10",
     "purecss": "^1.0.1",
     "raptor-pubsub": "^1.0.5",
     "raptor-util": "^3.1.0",
+    "rxjs": "^6.6.3",
     "serve-static": "^1.14.1",
+    "stream-http": "^3.1.1",
     "whatwg-fetch": "^3.0.0"
   },
   "devDependencies": {

@@ -1,0 +1,158 @@
+import {animate} from '../../../../utils'
+import http from 'stream-http'
+
+class {
+    onCreate() {
+        this.state = {
+            show: false,
+            id: undefined,
+            portal: undefined,
+            transition: undefined
+        };
+    }
+
+    onMount() {
+        const id = localStorage.getItem("id");
+        const target = this.el.querySelector(`.${id}`);
+
+        this.state.id = id;
+
+        if (target) {
+            setTimeout(() => {
+                this.state.show = true;
+            }, 280);
+
+            animate(target, () => {
+                localStorage.removeItem("id");
+                localStorage.removeItem("from");
+            });
+        }
+    }
+
+    mouseOver(id, { target }) {
+        const url = `/photo/${id}`;
+
+        const portal = document.createElement("portal");
+
+        portal.src = url;
+
+        portal.style.cssText = `
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        opacity: 0;
+        width: 100%;
+        height: 100%;
+        position: fixed;
+        z-index: 1000000;
+        pointer-events: none;
+        box-shadow: 0 2px 20px 0 rgba(0, 0, 0, 0.3)
+        `;
+
+        this.state.portal = portal;
+
+        document.body.appendChild(portal);
+
+        let transition = new SharedElement({
+            from: target,
+            to: this.state.portal
+        });
+
+        transition.init({ duration: 400 });
+
+        this.state.transition = transition;
+    }
+
+    mouseOut() {
+        this.state.portal && this.state.portal.remove();
+        this.state.portal = undefined;
+        this.state.transition = undefined;
+    }
+
+    getSnapshot(id, e) {
+        e.preventDefault();
+        const { target } = e;
+        // localStorage.setItem("id", id);
+        // const snapshot = target.getBoundingClientRect();
+        // localStorage.setItem("from", JSON.stringify(snapshot));
+
+        // const url = `/photo/${id}`;
+
+        this.state.transition.play(() => {
+            this.state.portal.style.removeProperty("opacity");
+            this.state.portal.activate().then(() => {
+                console.log("host", window.portalHost);
+            });
+        });
+
+        // http.get(url, function(res) {
+        //     res.on("data", function(buf) {
+        //         const html = new TextDecoder("utf-8").decode(buf);
+
+        //         const parser = new DOMParser();
+
+        //         const doc = parser.parseFromString(html, "text/html");
+
+        //         console.log(doc);
+
+        //         document.head = doc.head;
+        //         document.body = doc.body;
+
+        //         history.pushState({}, null, url);
+        //     });
+
+        //     res.on("end", function() {
+        //         console.log("end");
+        //     });
+        // });
+    }
+}
+
+style {
+    .images {
+        margin: 0;
+        height: 50%;
+        padding: 1rem;
+        display: grid;
+        list-style: none;
+        grid-template-rows: auto;
+        grid-template-columns: repeat(3, 1fr);
+    }
+
+    .image-wrapper {
+        height: 100%;
+    }
+
+    .image {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .hide {
+        visibility: hidden;
+    }
+
+    .show {
+        visibility: visible;
+    }
+}
+
+<ul.images>
+    <for|photo, i| of=input.photos>
+        <li.image-wrapper class={
+            [photo.id]: true,
+            hide: state.id === photo.id && !state.show,
+            show: state.id === photo.id && state.show
+        }>
+            <a
+                href=`/photo/${photo.id}`
+                on-mouseover("mouseOver", photo.id)
+                on-mouseout("mouseOut")
+                on-click("getSnapshot", photo.id)>
+                <img.image src=photo.uri/>
+            </a>
+        </li>
+    </for>
+</ul>
